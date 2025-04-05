@@ -90,9 +90,9 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("html", ULIGHT_LANG_HTML),
     make_lang_entry("hxx", ULIGHT_LANG_CPP),
     // make_lang_entry( u8"java", ULIGHT_LANG_java ),
-    // make_lang_entry( u8"javascript", ULIGHT_LANG_javascript ),
-    // make_lang_entry( u8"js", ULIGHT_LANG_javascript ),
-    // make_lang_entry( u8"jsx", ULIGHT_LANG_javascript ),
+    make_lang_entry("javascript", ULIGHT_LANG_JS),
+    make_lang_entry("js", ULIGHT_LANG_JS),
+    make_lang_entry("jsx", ULIGHT_LANG_JS),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
     make_lang_entry("mmml", ULIGHT_LANG_MMML),
     // make_lang_entry( u8"mts", ULIGHT_LANG_typescript ),
@@ -247,6 +247,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     case ULIGHT_LANG_CSS:
     case ULIGHT_LANG_HTML:
     case ULIGHT_LANG_LUA:
+    case ULIGHT_LANG_JS:
     case ULIGHT_LANG_MMML: break;
     case ULIGHT_LANG_NONE: {
         return error(

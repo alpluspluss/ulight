@@ -749,6 +749,129 @@ constexpr bool is_lua_hex_digit(char32_t c) noexcept
     return is_ascii_digit(c) || (c >= U'a' && c <= U'f') || (c >= U'A' && c <= U'F');
 }
 
+// JS ==============================================================================================
+
+/// @brief Classifications are from
+/// https://262.ecma-international.org/15.0/index.html#sec-grammar-summary
+// Note that this should be updated whenever the Unicode standard changes.
+// Currently, the Unicode characters are not fully supported.
+
+[[nodiscard]]
+constexpr bool is_js_whitespace(char32_t c)
+{
+    if (c <= 0x7F) {
+        return c == u8' ' || c == u8'\t' || c == u8'\v' || c == u8'\f' || c == u8'\n' || c == u8'\r'
+            ||
+            // Unicodes.
+            c == U'\u00A0' || // No-break space.
+            c == U'\u2028' || // Line separator.
+            c == U'\u2029' || // Paragraph separator.
+            c == U'\uFEFF'; // Zero width no-break space.
+    }
+
+    return c == U'\u00A0' || c == U'\u2028' || c == U'\u2029' || c == U'\uFEFF'
+        || (c >= U'\u1680' && c <= U'\u180E') || (c >= U'\u2000' && c <= U'\u200A')
+        || c == U'\u202F' || c == U'\u205F' || c == U'\u3000';
+}
+
+[[nodiscard]]
+constexpr bool is_js_digit(char32_t c)
+{
+    if (c <= 0x7F) {
+        return c >= U'0' && c <= U'9'; // ASCII.
+    }
+
+    return false;
+}
+
+[[nodiscard]]
+constexpr bool is_js_hex_digit(char32_t c)
+{
+    return (c >= U'0' && c <= U'9') || (c >= U'a' && c <= U'f') || (c >= U'A' && c <= U'F');
+}
+
+[[nodiscard]]
+constexpr bool is_js_identifier_start(char32_t c)
+{
+    // Special JS characters.
+    if (c == U'$' || c == U'_') {
+        return true;
+    }
+
+    // ASCII letters.
+    if ((c >= U'a' && c <= U'z') || (c >= U'A' && c <= U'Z')) {
+        return true;
+    }
+
+    // Lu, Ll, Lt, Lm, Lo, Nl categories.
+
+    if ((c >= U'\u00C0' && c <= U'\u00D6') || (c >= U'\u00D8' && c <= U'\u00F6')
+        || (c >= U'\u00F8' && c <= U'\u02FF')) {
+        return true;
+    }
+
+    if ((c >= U'\u0370' && c <= U'\u037D') || (c >= U'\u037F' && c <= U'\u1FFF')
+        || (c >= U'\u200C' && c <= U'\u200D')) {
+        return true;
+    }
+
+    if ((c >= U'\u2070' && c <= U'\u218F') || (c >= U'\u2C00' && c <= U'\u2FEF')
+        || (c >= U'\u3001' && c <= U'\uD7FF')) {
+        return true;
+    }
+
+    if ((c >= U'\uF900' && c <= U'\uFDCF') || (c >= U'\uFDF0' && c <= U'\uFFFD')
+        || (c >= U'\U00010000' && c <= U'\U000EFFFF')) {
+        return true;
+    }
+
+    return false;
+}
+
+[[nodiscard]]
+constexpr bool is_js_identifier_part(char32_t c)
+{
+    if (is_js_identifier_start(c)) {
+        return true;
+    }
+
+    if (c >= U'0' && c <= U'9') {
+        return true;
+    }
+
+    // Mn, Mc, Nd, Pc categories.
+    if ((c >= U'\u0300' && c <= U'\u036F') || (c >= U'\u1DC0' && c <= U'\u1DFF')
+        || (c >= U'\u20D0' && c <= U'\u20FF')) {
+        return true;
+    }
+
+    if ((c >= U'\uFE20' && c <= U'\uFE2F')) {
+        return true;
+    }
+
+    if ((c >= U'\u0660' && c <= U'\u0669') || // Arabic-Indic digits.
+        (c >= U'\u06F0' && c <= U'\u06F9') || // Extended Arabic-Indic digits.
+        (c >= U'\u07C0' && c <= U'\u07C9') || // NKo digits.
+        (c >= U'\u0966' && c <= U'\u096F')) { // Devanagari digits.
+        return true;
+    }
+
+    // Zero-width non-joiner and joiner.
+    if (c == U'\u200C' || c == U'\u200D') {
+        return true;
+    }
+
+    return false;
+}
+
+// JSX tag names can include identifiers, hyphens, colons, and periods
+// according to the official JSX spec.
+[[nodiscard]]
+constexpr bool is_jsx_tag_name_part(char32_t c)
+{
+    return is_js_identifier_part(c) || c == U'-' || c == U':' || c == U'.';
+}
+
 } // namespace ulight
 
 #endif
