@@ -19,6 +19,7 @@ using Underlying = unsigned char;
 enum struct Lang : Underlying {
     bash = ULIGHT_LANG_BASH,
     c = ULIGHT_LANG_C,
+    cowel = ULIGHT_LANG_COWEL,
     cpp = ULIGHT_LANG_CPP,
     css = ULIGHT_LANG_CSS,
     diff = ULIGHT_LANG_DIFF,
@@ -26,8 +27,11 @@ enum struct Lang : Underlying {
     javascript = ULIGHT_LANG_JS,
     json = ULIGHT_LANG_JSON,
     jsonc = ULIGHT_LANG_JSONC,
+    latex = ULIGHT_LANG_LATEX,
     lua = ULIGHT_LANG_LUA,
-    mmml = ULIGHT_LANG_MMML,
+    nasm = ULIGHT_LANG_NASM,
+    tex = ULIGHT_LANG_TEX,
+    txt = ULIGHT_LANG_TXT,
     xml = ULIGHT_LANG_XML,
     none = ULIGHT_LANG_NONE,
 };
@@ -188,6 +192,9 @@ constexpr Flag operator|(Flag x, Flag y) noexcept
     F(shell_command, "shell-command", "sh_cmd", ULIGHT_HL_SHELL_COMMAND)                           \
     F(shell_command_builtin, "shell-command-builtin", "sh_cmd_bltn",                               \
       ULIGHT_HL_SHELL_COMMAND_BUILTIN)                                                             \
+    F(asm_instruction, "asm-instruction", "asm_ins", ULIGHT_HL_ASM_INSTRUCTION)                    \
+    F(asm_instruction_pseudo, "asm-instruction-pseudo", "asm_ins_psu",                             \
+      ULIGHT_HL_ASM_INSTRUCTION_PSEUDO)                                                            \
     F(shell_option, "shell-option", "sh-opt", ULIGHT_HL_SHELL_OPTION)
 
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
@@ -377,7 +384,7 @@ struct [[nodiscard]] State {
         impl.text_buffer_length = buffer.size();
     }
 
-    void on_flush_text(void* data, void action(void*, char*, std::size_t))
+    void on_flush_text(const void* data, void action(const void*, char*, std::size_t))
     {
         impl.flush_text = action;
         impl.flush_text_data = data;

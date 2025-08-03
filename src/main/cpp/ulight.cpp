@@ -3,7 +3,7 @@
 #include <new>
 #include <string_view>
 
-#include "ulight/impl/strings.hpp"
+#include "ulight/function_ref.hpp"
 #include "ulight/ulight.h"
 #include "ulight/ulight.hpp"
 
@@ -12,6 +12,7 @@
 #include "ulight/impl/highlight.hpp"
 #include "ulight/impl/memory.hpp"
 #include "ulight/impl/platform.h"
+#include "ulight/impl/strings.hpp"
 #include "ulight/impl/unicode.hpp"
 
 namespace ulight {
@@ -81,11 +82,16 @@ consteval ulight_string_view make_sv(std::string_view name)
 // clang-format off
 ULIGHT_EXPORT
 constexpr ulight_lang_entry ulight_lang_list[] {
+    make_lang_entry("asm", ULIGHT_LANG_NASM),
+    make_lang_entry("assembler", ULIGHT_LANG_NASM),
+    make_lang_entry("assembly", ULIGHT_LANG_NASM),
     make_lang_entry("atom", ULIGHT_LANG_XML),
     make_lang_entry("bash", ULIGHT_LANG_BASH),
     make_lang_entry("c", ULIGHT_LANG_C),
     make_lang_entry("c++", ULIGHT_LANG_CPP),
     make_lang_entry("cc", ULIGHT_LANG_CPP),
+    make_lang_entry("cow", ULIGHT_LANG_COWEL),
+    make_lang_entry("cowel", ULIGHT_LANG_COWEL),
     make_lang_entry("cplusplus", ULIGHT_LANG_CPP),
     make_lang_entry("cpp", ULIGHT_LANG_CPP),
     make_lang_entry("css", ULIGHT_LANG_CSS),
@@ -104,17 +110,23 @@ constexpr ulight_lang_entry ulight_lang_list[] {
     make_lang_entry("json", ULIGHT_LANG_JSON),
     make_lang_entry("jsonc", ULIGHT_LANG_JSONC),
     make_lang_entry("jsx", ULIGHT_LANG_JS),
+    make_lang_entry("latex", ULIGHT_LANG_LATEX),
     make_lang_entry("lua", ULIGHT_LANG_LUA),
-    make_lang_entry("mmml", ULIGHT_LANG_MMML),
+    make_lang_entry("nasm", ULIGHT_LANG_NASM),
     // make_lang_entry( u8"mts", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"ts", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"tsx", ULIGHT_LANG_typescript ),
     // make_lang_entry( u8"typescript", ULIGHT_LANG_typescript ),
     make_lang_entry("patch", ULIGHT_LANG_DIFF),
+    make_lang_entry("plaintext", ULIGHT_LANG_TXT),
     make_lang_entry("plist", ULIGHT_LANG_XML),
     make_lang_entry("rss", ULIGHT_LANG_XML),
     make_lang_entry("sh", ULIGHT_LANG_BASH),
     make_lang_entry("svg", ULIGHT_LANG_XML),
+    make_lang_entry("tex", ULIGHT_LANG_TEX),
+    make_lang_entry("text", ULIGHT_LANG_TXT),
+    make_lang_entry("txt", ULIGHT_LANG_TXT),
+    make_lang_entry("x86asm", ULIGHT_LANG_NASM),
     make_lang_entry("xbj", ULIGHT_LANG_XML),
     make_lang_entry("xhtml", ULIGHT_LANG_XML),
     make_lang_entry("xml", ULIGHT_LANG_XML),
@@ -129,7 +141,7 @@ constexpr std::size_t ulight_lang_list_length = std::size(ulight_lang_list);
 ULIGHT_EXPORT
 constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("N/A"),
-    make_sv("MMML"),
+    make_sv("COWEL"),
     make_sv("C++"),
     make_sv("Lua"),
     make_sv("HTML"),
@@ -141,6 +153,10 @@ constexpr ulight_string_view ulight_lang_display_names[ULIGHT_LANG_COUNT] {
     make_sv("JSON"),
     make_sv("JSON with Comments"),
     make_sv("XML"),
+    make_sv("Plaintext"),
+    make_sv("TeX"),
+    make_sv("LaTeX"),
+    make_sv("NASM"),
 };
 // clang-format on
 
@@ -386,7 +402,9 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     ulight::Global_Memory_Resource memory;
     const ulight::Highlight_Options options = ulight::to_options(state->flags);
 
+#ifdef ULIGHT_EXCEPTIONS
     try {
+#endif
         const ulight::Status result
             = ulight::highlight(buffer, source, ulight::Lang(state->lang), &memory, options);
         // We've already checked for language validity.
@@ -394,6 +412,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
         ULIGHT_ASSERT(result != ulight::Status::bad_lang);
         buffer.flush();
         return ulight_status(result);
+#ifdef ULIGHT_EXCEPTIONS
     } catch (const ulight::utf8::Unicode_Error&) {
         return error(
             state, ULIGHT_STATUS_BAD_TEXT, u8"The given source code is not correctly UTF-8-encoded."
@@ -406,6 +425,7 @@ ulight_status ulight_source_to_tokens(ulight_state* state) noexcept
     } catch (...) {
         return error(state, ULIGHT_STATUS_INTERNAL_ERROR, u8"An internal error occurred.");
     }
+#endif
 }
 
 ULIGHT_EXPORT
@@ -452,7 +472,7 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
 
     std::size_t previous_end = 0;
     auto flush_text = // clang-format off
-    [&](const ulight_token* tokens, std::size_t amount) mutable  {
+    [&](ulight_token* tokens, std::size_t amount) mutable  {
         #ifndef NDEBUG
         check_flush_validity(state, {tokens, amount}); 
         #endif
@@ -483,19 +503,19 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
             previous_end = t.begin + t.length;
         }
     };
+    ulight::Function_Ref<void( ulight_token*, std::size_t)> flush_text_ref = flush_text;
 
     // clang-format on
-    state->flush_tokens_data = &flush_text;
-    state->flush_tokens = [](void* erased_flush_text, ulight_token* tokens, std::size_t amount) {
-        auto& flush_text_ref = *static_cast<decltype(flush_text)*>(erased_flush_text);
-        flush_text_ref(tokens, amount);
-    };
+    state->flush_tokens_data = flush_text_ref.get_entity();
+    state->flush_tokens = flush_text_ref.get_invoker();
 
     const ulight_status result = ulight_source_to_tokens(state);
     if (result != ULIGHT_STATUS_OK) {
         return result;
     }
+#ifdef ULIGHT_EXCEPTIONS
     try {
+#endif
         // It is common that the final token doesn't encompass the last code unit in the source.
         // For example, there can be a trailing '\n' at the end of the file, without highlighting.
         ULIGHT_ASSERT(previous_end <= state->source_length);
@@ -504,9 +524,11 @@ ulight_status ulight_source_to_html(ulight_state* state) noexcept
         }
         buffer.flush();
         return ULIGHT_STATUS_OK;
+#ifdef ULIGHT_EXCEPTIONS
     } catch (...) {
         return error(state, ULIGHT_STATUS_INTERNAL_ERROR, u8"An internal error occurred.");
     }
+#endif
 }
 
 } // extern "C"

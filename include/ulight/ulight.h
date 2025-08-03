@@ -54,7 +54,7 @@ typedef struct ulight_u8string_view {
 enum {
     /// @brief The amount of unique languages supported,
     /// including `ULIGHT_LANG_NONE`.
-    ULIGHT_LANG_COUNT = 13
+    ULIGHT_LANG_COUNT = 17
 };
 
 /// @brief A language supported by ulight for syntax highlighting.
@@ -63,6 +63,8 @@ typedef enum ulight_lang {
     ULIGHT_LANG_BASH = 8,
     /// @brief C.
     ULIGHT_LANG_C = 6,
+    /// @brief COWEL (Compact Web Language).
+    ULIGHT_LANG_COWEL = 1,
     /// @brief C++.
     ULIGHT_LANG_CPP = 2,
     /// @brief CSS.
@@ -77,10 +79,16 @@ typedef enum ulight_lang {
     ULIGHT_LANG_JSON = 10,
     /// @brief JSON with comments.
     ULIGHT_LANG_JSONC = 11,
+    /// @brief LaTeX.
+    ULIGHT_LANG_LATEX = 15,
     /// @brief Lua.
     ULIGHT_LANG_LUA = 3,
-    /// @brief MMML (Missing Middle Markup Language).
-    ULIGHT_LANG_MMML = 1,
+    /// @brief Netwide Assembler.
+    ULIGHT_LANG_NASM = 16,
+    /// @brief TeX.
+    ULIGHT_LANG_TEX = 14,
+    /// @brief Plaintext.
+    ULIGHT_LANG_TXT = 13,
     /// @brief XML.
     ULIGHT_LANG_XML = 12,
     /// @brief No langage (null result).
@@ -411,7 +419,7 @@ typedef enum ulight_highlight_type {
     /// @brief Operators like `+` in languages where they have special meaning.
     ULIGHT_HL_SYM_OP = 0xc7,
 
-    // 0xd0..0xdf Shell languages, build systems, etc.
+    // 0xd0..0xd7 Shell languages, build systems, etc.
     // -------------------------------------------------------------------------
 
     /// @brief A command in a shell or build system.
@@ -422,6 +430,16 @@ typedef enum ulight_highlight_type {
     /// @brief An option in a shell command,
     /// such as `-r` in `rm -r`.
     ULIGHT_HL_SHELL_OPTION = 0xd2,
+
+    // 0xd8..0xdf Assembly
+    // -------------------------------------------------------------------------
+
+    /// @brief In assembly languages, an instruction.
+    ULIGHT_HL_ASM_INSTRUCTION = 0xe0,
+    /// @brief In assembly languages, a pseudo-instruction.
+    /// That is, an instruction like `db` which doesn't correspond to any CPU instruction,
+    /// but acts as command to the assembler itself.
+    ULIGHT_HL_ASM_INSTRUCTION_PSEUDO = 0xe1,
 
     // 0xe0..0xff Unused
     // -------------------------------------------------------------------------
@@ -504,10 +522,10 @@ typedef struct ulight_state {
     /// @brief The length of `token_buffer`.
     size_t token_buffer_length;
     /// @brief  Passed as the first argument into `flush_tokens`.
-    void* flush_tokens_data;
+    const void* flush_tokens_data;
     /// @brief When `token_buffer` is full,
     /// is invoked with `flush_tokens_data`, `token_buffer`, and `token_buffer_length`.
-    void (*flush_tokens)(void*, ulight_token*, size_t);
+    void (*flush_tokens)(const void*, ulight_token*, size_t);
 
     /// @brief For HTML generation, the UTF-8-encoded name of tags.
     const char* html_tag_name;
@@ -523,10 +541,10 @@ typedef struct ulight_state {
     /// @brief The length of `text_buffer`.
     size_t text_buffer_length;
     /// @brief Passed as the first argument into `flush_text`.
-    void* flush_text_data;
+    const void* flush_text_data;
     /// @brief When `text_buffer` is full,
     /// is invoked with `flush_text_data`, `text_buffer`, and `text_buffer_length`.
-    void (*flush_text)(void*, char*, size_t);
+    void (*flush_text)(const void*, char*, size_t);
 
     /// @brief A brief UTF-8-encoded error text.
     const char* error;

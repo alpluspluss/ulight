@@ -23,6 +23,8 @@
         "bool": "#9f6807",
         "this": "#00607c",
         "macro": "#6f4e37",
+        "id": "#000000",
+        "id-label": "#517a0b",
         "keyword": "#00607c",
         "sym": "#570057",
         "sym-punc": "#000000",
@@ -113,11 +115,13 @@
             "text-decoration": "underline line-through"
         },
         "shell-command": "#00607c",
-        "shell-option": "#000000"
+        "shell-option": "#000000",
+        "asm-instruction": "#00607c",
+        "asm-instruction-pseudo": "#9f6807"
     },
     "dark": {
         "background": "#171717",
-        "foreground": "#d0d0d0",
+        "foreground": "#f0f0f0",
         "error": "#ff0000",
         "comment": {
             "color": "#a2e08d",
@@ -138,6 +142,8 @@
         "bool": "#f2d18d",
         "this": "#62ded6",
         "macro": "#cc946e",
+        "id": "#f0f0f0",
+        "id-label": "#d8eda6",
         "keyword": "#62ded6",
         "sym": "#baa6b9",
         "sym-punc": "#d0d0d0",
@@ -228,6 +234,8 @@
             "text-decoration": "underline line-through"
         },
         "shell-command": "#62ded6",
-        "shell-option": "#d0d0d0"
+        "shell-option": "#f0f0f0",
+        "asm-instruction": "#62ded6",
+        "asm-instruction-pseudo": "#e6aee6"
     }
 }

@@ -51,11 +51,14 @@ using Underlying = unsigned char;
 } // namespace ulight
 #endif
 
-#ifdef ULIGHT_EMSCRIPTEN
-#include <emscripten.h>
-#define ULIGHT_EXPORT EMSCRIPTEN_KEEPALIVE
+#ifdef __GNUC__
+#define ULIGHT_EXPORT [[gnu::used]]
 #else
 #define ULIGHT_EXPORT
+#endif
+
+#ifdef __EXCEPTIONS
+#define ULIGHT_EXCEPTIONS 1
 #endif
 
 // https://stackoverflow.com/q/45762357/5740428

@@ -1,10 +1,10 @@
-#ifndef ULIGHT_MMML_HPP
-#define ULIGHT_MMML_HPP
+#ifndef ULIGHT_COWEL_HPP
+#define ULIGHT_COWEL_HPP
 
 #include <cstddef>
 #include <string_view>
 
-namespace ulight::mmml {
+namespace ulight::cowel {
 
 [[nodiscard]]
 std::size_t match_directive_name(std::u8string_view str);
@@ -13,10 +13,19 @@ std::size_t match_directive_name(std::u8string_view str);
 std::size_t match_argument_name(std::u8string_view str);
 
 [[nodiscard]]
-std::size_t match_whitespace(std::u8string_view str);
+std::size_t match_escape(std::u8string_view str);
 
 [[nodiscard]]
-bool starts_with_escape_or_directive(std::u8string_view str);
+std::size_t match_whitespace(std::u8string_view str);
+
+/// @brief Matches a line comment, starting with `\:` and continuing until the end of the line.
+/// The resulting length includes the `\:` prefix,
+/// but does not include the line terminator.
+[[nodiscard]]
+std::size_t match_line_comment(std::u8string_view str);
+
+[[nodiscard]]
+bool starts_with_escape_comment_directive(std::u8string_view str);
 
 struct Named_Argument_Result {
     std::size_t length;
@@ -37,6 +46,6 @@ struct Named_Argument_Result {
 [[nodiscard]]
 Named_Argument_Result match_named_argument_prefix(std::u8string_view str);
 
-} // namespace ulight::mmml
+} // namespace ulight::cowel
 
 #endif

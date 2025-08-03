@@ -22,7 +22,7 @@ struct Highlight_Options {
     bool strict = false;
 };
 
-bool highlight_mmml(
+bool highlight_cowel(
     Non_Owning_Buffer<Token>& out,
     std::u8string_view source,
     std::pmr::memory_resource* memory,
@@ -94,6 +94,36 @@ bool highlight_jsonc(
     std::pmr::memory_resource* memory,
     const Highlight_Options& options = {}
 );
+inline bool highlight_txt(
+    Non_Owning_Buffer<Token>&,
+    std::u8string_view,
+    std::pmr::memory_resource*,
+    const Highlight_Options& = {}
+)
+{
+    return true;
+}
+bool highlight_tex(
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options = {}
+);
+inline bool highlight_latex(
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options = {}
+)
+{
+    return highlight_tex(out, source, memory, options);
+}
+bool highlight_nasm(
+    Non_Owning_Buffer<Token>& out,
+    std::u8string_view source,
+    std::pmr::memory_resource* memory,
+    const Highlight_Options& options = {}
+);
 
 inline Status highlight(
     Non_Owning_Buffer<Token>& out,
@@ -113,8 +143,8 @@ inline Status highlight(
     switch (language) {
     case Lang::cpp: //
         return to_result(highlight_cpp(out, source, memory, options));
-    case Lang::mmml: //
-        return to_result(highlight_mmml(out, source, memory, options));
+    case Lang::cowel: //
+        return to_result(highlight_cowel(out, source, memory, options));
     case Lang::lua: //
         return to_result(highlight_lua(out, source, memory, options));
     case Lang::html: //
@@ -135,6 +165,14 @@ inline Status highlight(
         return to_result(highlight_json(out, source, memory, options));
     case Lang::jsonc: //
         return to_result(highlight_jsonc(out, source, memory, options));
+    case Lang::txt: //
+        return to_result(highlight_txt(out, source, memory, options));
+    case Lang::tex: //
+        return to_result(highlight_tex(out, source, memory, options));
+    case Lang::latex: //
+        return to_result(highlight_latex(out, source, memory, options));
+    case Lang::nasm: //
+        return to_result(highlight_nasm(out, source, memory, options));
     default: //
         return Status::bad_lang;
     }
